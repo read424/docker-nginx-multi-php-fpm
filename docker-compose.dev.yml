@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:stable-bullseye
+    container_name: nginx
+    hostname: nginx
+    restart: always
+    volumes:
+      - ./php_mapping.conf:/etc/nginx/conf.d/php_mapping.conf
+      - ./php.conf:/etc/nginx/php.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      - ./api-tlm.conf:/etc/nginx/conf.d/api-tlm.conf
+      - /var/www/html/:/usr/share/nginx/html
+      - /var/www/api-v1/:/usr/share/nginx/html/api-tlm
+    ports:
+      - 80:80
+    networks:
+      - web-nginx
+    depends_on:
+      - php-fpm
+      - php-fpm8
+
+  php-fpm:
+    image: php:7.4.0-fpm-alpine
+    container_name: php7.4
+    hostname: php-fpm
+    restart: always
+    volumes:
+      - /var/www/html/:/usr/share/nginx/html
+      - /var/www/api-v1/:/usr/share/nginx/html/api-tlm
+    networks:
+      - web-nginx
+
+  php-fpm8:
+    image: php:8.0.5-fpm-alpine
+    container_name: php8
+    hostname: php-fpm8
+    restart: always
+    volumes:
+      - /var/www/html/:/usr/share/nginx/html
+    networks:
+      - web-nginx
+
+networks:
+  web-nginx:
+    driver: bridge
+    name: net-web-nginx
